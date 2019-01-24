@@ -1,0 +1,12 @@
+{
+  "parserOptions": {
+    "ecmaVersion": 2018,
+    "sourceType": "module"
+  },
+
+  "rules": {
+    "no-unused-vars": 0,
+    "no-script-url": 0,
+    "jsx-a11y/anchor-is-valid": 0
+  }
+}
