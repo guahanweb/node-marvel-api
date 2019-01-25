@@ -46,7 +46,7 @@ Marvel.characters().execute()
 	
 // Retrieve a single character's creators
 //   Endpoint: /characters/{characterId}/creators
-Marvel.characters().id(characterId).creators()
+Marvel.characters(characterId).creators()
 	.execute()
 	.then(handleResults)
 	.catch(console.error);
