@@ -8,6 +8,7 @@
   },
   "author": "Garth Henson <garth@guahanweb.com>",
   "license": "MIT",
+  "keywords": ["api", "marvel", "comic", "comics", "character", "characters", "creator", "events", "stories", "series", "heroes", "villains", "superhero", "superheroes", "supervillain", "supervillains", "info"],
   "dependencies": {
     "request": "2.88.0",
     "request-promise": "4.2.2"
