@@ -1,5 +1,7 @@
 const request = require('request-promise');
-const { cleanUrl } = require('../helpers');
+
+const { config } = require('./index');
+const { getUrl, cleanUrl } = require('../helpers');
 
 /**
  * Lightweight request cache.
@@ -15,6 +17,7 @@ class RequestCache {
     this.cache = [];
   }
 
+  // we are going to juggle data just a bit for easier access
   put(key, data) {
     let index = this.keys.length;
     this.keys[index] = key;
@@ -22,12 +25,14 @@ class RequestCache {
     this.cache[index] = data;
   }
 
+  // retrieve the etag, if it exists, for the cache key
   etag(key) {
     let index = this.keys.indexOf(key);
     return (index === -1) ? null : this.etags[index];
   }
 
-  get() {
+  // retrieve the cached data, if it exists, for the cache key
+  get(key) {
     let index = this.keys.indexOf(key);
     return (index === -1) ? null : this.cache[index];
   }
@@ -69,19 +74,15 @@ class RequestCache {
     return o;
   }
 }
+// initialize one static instance across all requests we need to manage
+const cache = new RequestCache();
 
 /**
  * Requests to the API need to cache the last response
  * with the ETag and attach the ETag header to subsequent
  * requests.
- *
- * @class
  */
-class RequestManager {
-  constructor() {
-    this.cache = new RequestCache();
-  }
-
+const RequestManager = {
   /**
    * Request a data set from the provided API path. This method will attempt
    * to pass any existing ETag from previously matching cache keys, and if we
@@ -91,12 +92,14 @@ class RequestManager {
    * @param {string} url The API path we are calling
    * @returns {Promise}
    */
-  async fetch(url) {
-    let me = this;
-    let key = cleanUrl(url);
+  async fetch(url, params) {
+    // set up  our cache key and full auth URI for this request
+    let key = JSON.stringify({ url, params });
+    let uri = getUrl(config, url, params);
+
     let opts = {
       method: 'GET',
-      uri: url,
+      uri,
       headers: {
         'accept': '*/*'
       },
@@ -104,14 +107,14 @@ class RequestManager {
       // only 2xx responses fire this method
       transform: function (body, response, resolveWithFullResponse) {
         let data = JSON.parse(body);
-        me.cache.put(key, data);
+        cache.put(key, data);
         return data;
       }
     };
 
     // if we have a cache for this route, hand the ETag header off
     // to the API.
-    let etag = this.cache.etag(key);
+    let etag = cache.etag(key);
     if (!!etag) {
       opts.headers['if-none-match'] = etag;
     }
@@ -126,7 +129,7 @@ class RequestManager {
         .catch(err => {
           // 304 tells us we had an ETag match
           if (err.response.statusCode === 304) {
-            let payload = me.cache.get(key);
+            let payload = cache.get(key);
             if (!payload) {
               // we expected a hit here, but something failed, so we reject anyway
               reject(err);
@@ -141,8 +144,17 @@ class RequestManager {
           }
         });
     });
+  },
+
+  // accessor to retrieve the full cache payload for persistence, if desired
+  get cache() {
+    return cache.toJSON();
+  },
+
+  // pre-saturate the cache with a previously known state
+  set cache(data) {
+    cache.fromJSON(data);
   }
 }
 
-const rm = new RequestManager();
-module.exports = rm;
+module.exports = RequestManager;

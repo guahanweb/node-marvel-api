@@ -1,11 +1,17 @@
-const { getUrl } = require('../helpers');
-
 const supported_apis = ['public'];
 const supported_versions = ['v1'];
 
 // configure the API for use
-let config, url;
-function init(opts) {
+let config;
+let apis = null;
+
+function init(opts = null) {
+  if (opts === null && apis !== null) {
+    // we have already initialized, so return the apis
+    return apis;
+  }
+
+  // default values to support future expansion
   let defaults = {
     public_key: null,
     private_key: null,
@@ -42,25 +48,25 @@ function init(opts) {
   }
   props.version = version;
   config = props;
-  url = getUrl.bind({}, config);
+
+  // set up our APIs
+  apis = {
+    characters: require('./characters'),
+    comics:     require('./comics'),
+    creators:   require('./creators'),
+    events:     require('./events'),
+    series:     require('./series'),
+    stories:    require('./stories')
+  };
+
+  return apis;
 }
 
-const Characters  = require('./characters');
-
-const Marvel = {
+let Marvel = {
   init,
-
-  // delegate the characters endpoints
-  get characters() {
-    return Characters(url);
+  get config() {
+    return config;
   }
-
-  /*
-  // delegate the creators endpoints
-  get creators() {
-    return Creators(url);
-  }
-  */
 };
 
 module.exports = Marvel;
