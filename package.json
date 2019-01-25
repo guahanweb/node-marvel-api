@@ -1,6 +1,6 @@
 {
   "name": "@guahanweb/marvel-api",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Node.js client to interact with the Marvel Developer API: https://developer.marvel.com",
   "main": "src/api/index.js",
   "scripts": {
