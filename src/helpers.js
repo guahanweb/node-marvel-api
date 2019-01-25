@@ -36,8 +36,13 @@ function cleanUrl(uri) {
   return urlObj.toString();
 }
 
+function isNumeric(n) {
+  return !isNaN(parseFloat(n)) && isFinite(n);
+}
+
 module.exports = {
   getAuth,
   getUrl,
-  cleanUrl
+  cleanUrl,
+  isNumeric
 };

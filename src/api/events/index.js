@@ -1,3 +1,5 @@
+const { isNumeric } = require('../../helpers');
+
 const Query = require('../query');
 const { characters, comics, creators, series, stories } = require('../add-ons');
 
@@ -8,24 +10,25 @@ const { characters, comics, creators, series, stories } = require('../add-ons');
 class EventQuery extends Query {
   // @TODO: filter params and validate them for this endpoint
   constructor(params) {
-    super('/events', params);
+    if (isNumeric(params)) {
+      super('/events');
+      addExtras.call(this, params);
+    } else {
+      super('/events', params);
+    }
   }
+}
 
-  // fetching a single record by id resets the params
-  id(id) {
-    let me = this;
-    this.uri += `/${id}`;
-    this.params = {};
+function addExtras(id) {
+  this.uri += `/${id}`;
+  this.params = {};
 
-    // add functions here
-    this.characters = characters.bind(this);
-    this.comics = comics.bind(this);
-    this.creators = creators.bind(this);
-    this.series = series.bind(this);
-    this.stories = stories.bind(this);
-
-    return this;
-  }
+  // add functions here
+  this.characters = characters.bind(this);
+  this.comics = comics.bind(this);
+  this.creators = creators.bind(this);
+  this.series = series.bind(this);
+  this.stories = stories.bind(this);
 }
 
 module.exports = function (params) {
